@@ -1,6 +1,6 @@
 {
-    "name": "main_flutter",
-    "short_name": "main_flutter",
+    "name": "flutter_complete_guide",
+    "short_name": "flutter_complete_guide",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
