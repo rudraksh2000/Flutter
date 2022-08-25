@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.main_flutter">
+    package="com.example.expense_planner">
    <application
-        android:label="main_flutter"
+        android:label="expense_planner"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

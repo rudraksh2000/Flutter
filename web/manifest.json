@@ -1,6 +1,6 @@
 {
-    "name": "main_flutter",
-    "short_name": "main_flutter",
+    "name": "expense_planner",
+    "short_name": "expense_planner",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
