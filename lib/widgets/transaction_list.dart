@@ -1,15 +1,14 @@
 // ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
+import './transaction_item.dart';
 import '../models/transactions.dart';
 
 class TransactionList extends StatelessWidget {
   final List<Transaction> userTransactions;
   final Function deleteTxn;
 
-  TransactionList(this.userTransactions, this.deleteTxn);
+  const TransactionList(this.userTransactions, this.deleteTxn);
 
   @override
   Widget build(BuildContext context) {
@@ -42,99 +41,29 @@ class TransactionList extends StatelessWidget {
               ],
             );
           })
-        : ListView.builder(
-            // since Transactions is not a widget we have to map the list of
-            // transactions to some widget just like earlier,
-            // here we map it with card.
-            itemBuilder: (context, index) {
-              return
-                  // the given below is one way od getting the transaction
-                  // the other way is to use ListView.
+        // since Transactions is not a widget we have to map the list of
+        // transactions to some widget just like earlier,
+        // here we map it with card.
 
-                  // Card(
-                  //   child: Row(
-                  //     children: [
-                  //       Container(
-                  //         margin:
-                  //             EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                  //         decoration: BoxDecoration(
-                  //           border: Border.all(
-                  //             width: 2,
-                  //             color: Theme.of(context).primaryColor,
-                  //           ),
-                  //         ),
-                  //         // here we can see that margin is taking space outside of
-                  //         // the border but padding it taking the inside space around
-                  //         // the child.
-                  //         padding: EdgeInsets.all(10),
-                  //         child: Text(
-                  //           // toStringAsFixed for fixed decimal values
-                  //           '\$${userTransactions[index].amount.toStringAsFixed(2)}',
-                  //           style: Theme.of(context).textTheme.headline6,
-                  //         ),
-                  //       ),
-                  //       Column(
-                  //         crossAxisAlignment: CrossAxisAlignment.start,
-                  //         children: [
-                  //           Text(
-                  //             userTransactions[index].title,
-                  //             style: Theme.of(context).textTheme.headline6,
-                  //           ),
-                  //           Text(
-                  //             DateFormat.yMMMd()
-                  //                 .format(userTransactions[index].date),
-                  //             style: TextStyle(
-                  //               color: Colors.blueGrey,
-                  //               fontSize: 10,
-                  //             ),
-                  //           ),
-                  //         ],
-                  //       )
-                  //     ],
-                  //   ),
-                  // );
-                  Card(
-                elevation: 5,
-                margin: EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    radius: 30,
-                    child: Padding(
-                      padding: EdgeInsets.all(6.0),
-                      child: FittedBox(
-                        child: Text('\$${userTransactions[index].amount}'),
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    userTransactions[index].title,
-                    style: Theme.of(context).textTheme.headline6,
-                  ),
-                  subtitle: Text(
-                    DateFormat.yMMMd().format(userTransactions[index].date),
-                  ),
-                  trailing: MediaQuery.of(context).size.width > 400
-                      ? FlatButton.icon(
-                          onPressed: () =>
-                              deleteTxn(userTransactions[index].id),
-                          icon: Icon(Icons.delete),
-                          // this is for red color.
-                          textColor: Theme.of(context).errorColor,
-                          label: Text('Delete'),
-                        )
-                      : IconButton(
-                          icon: Icon(Icons.delete_forever_outlined),
-                          iconSize: 30,
-                          color: Theme.of(context).accentColor,
-                          // here we are passing the function not as a reference
-                          // because we need an argument with also.
-                          onPressed: () =>
-                              deleteTxn(userTransactions[index].id),
-                        ),
-                ),
-              );
-            },
-            itemCount: userTransactions.length,
+        // we cannot use key: ValueKey(userTransactions[index].id) with
+        // ListView.builder though because of a bug but we can use it
+        // with ListView (children : [])
+
+        // ListView.builder(
+        // itemBuilder: (context, index) {
+        //   return TransactionItem(
+        //       key: ValueKey(userTransactions[index].id),
+        //       userTransaction: userTransactions[index],
+        //       deleteTxn: deleteTxn);
+        // },
+
+        : ListView(
+            children: userTransactions
+                .map((txn) => TransactionItem(
+                    key: ValueKey(txn.id),
+                    userTransaction: txn,
+                    deleteTxn: deleteTxn))
+                .toList(),
           );
   }
 }

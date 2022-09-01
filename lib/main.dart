@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import './widgets/transaction_list.dart';
 import './widgets/new_transaction.dart';
@@ -59,7 +58,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final List<Transaction> _userTransactions = [
     // Transaction(
     //   id: 't1',
@@ -74,8 +73,24 @@ class _MyHomePageState extends State<MyHomePage> {
     //   date: DateTime.now(),
     // )
   ];
-
   bool _showChart = false;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance?.addObserver(this);
+    super.initState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    print(state);
+  }
+
+  dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
+    super.dispose();
+  }
 
   List<Transaction> get _recentTransactions {
     // txn is used to get every element in the list of transactions.
@@ -121,6 +136,99 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  List<Widget> _buildLandscapeContent(MediaQueryData mediaQuery,
+      PreferredSizeWidget appBar, Widget txnListWidget) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Show Chart : ',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+          // for different ios.
+          Switch.adaptive(
+              value: _showChart,
+              activeColor: Theme.of(context).accentColor,
+              onChanged: (val) {
+                setState(() {
+                  _showChart = val;
+                });
+              }),
+        ],
+      ),
+      _showChart
+          ? Container(
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.7,
+              child: Chart(_recentTransactions),
+            )
+          : txnListWidget,
+    ];
+  }
+
+  List<Widget> _buildPortraitContent(MediaQueryData mediaQuery,
+      PreferredSizeWidget appBar, Widget txnListWidget) {
+    return [
+      Container(
+        // here we are using MediaQuery to get the device information
+        // and getting the height accordingly and using appBar variable
+        // we are deducting the height of AppBar widget please note that
+        // we are using this for both Chart and TransactionList.
+
+        // preferredSize is used th get the size of the AppBar.
+
+        //  MediaQuery.of(context).padding.top this is also deducted for
+        // status bar that comes at the top by default and padding widget
+        // get us the additional device padding that flutter provides us.
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.25,
+        child: Chart(_recentTransactions),
+      ),
+      txnListWidget
+    ];
+  }
+
+  Widget _isIosNavigationBar() {
+    return CupertinoNavigationBar(
+      middle: Text('Personal Expenses'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // we cannot use IconButton here since IconButton is from
+          // material.dart but it cannot be used here in
+          // CupertinoNavigationBar therefore we can design our own button
+          // using GestureDectector.
+
+          // IconButton(
+          //   onPressed: () => _startAddNewTransaction(context),
+          //   icon: Icon(Icons.add),
+          // ),
+          GestureDetector(
+            child: Icon(CupertinoIcons.add),
+            onTap: () => _startAddNewTransaction(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _isAndroidAppBar() {
+    return AppBar(
+      title: Text('Personal Expenses'),
+      actions: [
+        IconButton(
+          onPressed: (() => _startAddNewTransaction(context)),
+          icon: Icon(Icons.add),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // we store MediaQuery.of(context) into a variable to use it often avoiding
@@ -136,39 +244,10 @@ class _MyHomePageState extends State<MyHomePage> {
     // to get that both AppBar and CupertinoNavigationBar are using same
     // preferredSize property therefore we can have PreferredSizeWidget
     // varaiable.
-    final PreferredSizeWidget appBar = Platform.isIOS
-        ? CupertinoNavigationBar(
-            middle: Text('Personal Expenses'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // we cannot use IconButton here since IconButton is from
-                // material.dart but it cannot be used here in
-                // CupertinoNavigationBar therefore we can design our own button
-                // using GestureDectector.
-
-                // IconButton(
-                //   onPressed: () => _startAddNewTransaction(context),
-                //   icon: Icon(Icons.add),
-                // ),
-                GestureDetector(
-                  child: Icon(CupertinoIcons.add),
-                  onTap: () => _startAddNewTransaction(context),
-                ),
-              ],
-            ),
-          )
-        : AppBar(
-            title: Text('Personal Expenses'),
-            actions: [
-              IconButton(
-                onPressed: (() => _startAddNewTransaction(context)),
-                icon: Icon(Icons.add),
-              ),
-            ],
-          );
+    final PreferredSizeWidget appBar =
+        Platform.isIOS ? _isIosNavigationBar() : _isAndroidAppBar();
     // this is to avoid code rewrite
-    final txListWidget = Container(
+    final txnListWidget = Container(
       height: (mediaQuery.size.height -
               appBar.preferredSize.height -
               mediaQuery.padding.top) *
@@ -193,53 +272,9 @@ class _MyHomePageState extends State<MyHomePage> {
             // if statement here is used to get the requirements as per the
             // orientation.
             if (isLandscape)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Show Chart : ',
-                    style: Theme.of(context).textTheme.headline6,
-                  ),
-                  // for different ios.
-                  Switch.adaptive(
-                      value: _showChart,
-                      activeColor: Theme.of(context).accentColor,
-                      onChanged: (val) {
-                        setState(() {
-                          _showChart = val;
-                        });
-                      }),
-                ],
-              ),
+              ..._buildLandscapeContent(mediaQuery, appBar, txnListWidget),
             if (!isLandscape)
-              Container(
-                // here we are using MediaQuery to get the device information
-                // and getting the height accordingly and using appBar variable
-                // we are deducting the height of AppBar widget please note that
-                // we are using this for both Chart and TransactionList.
-
-                // preferredSize is used th get the size of the AppBar.
-
-                //  MediaQuery.of(context).padding.top this is also deducted for
-                // status bar that comes at the top by default and padding widget
-                // get us the additional device padding that flutter provides us.
-                height: (mediaQuery.size.height -
-                        appBar.preferredSize.height -
-                        mediaQuery.padding.top) *
-                    0.25,
-                child: Chart(_recentTransactions),
-              ),
-            if (!isLandscape) txListWidget,
-            if (isLandscape)
-              _showChart
-                  ? Container(
-                      height: (mediaQuery.size.height -
-                              appBar.preferredSize.height -
-                              mediaQuery.padding.top) *
-                          0.7,
-                      child: Chart(_recentTransactions),
-                    )
-                  : txListWidget,
+              ..._buildPortraitContent(mediaQuery, appBar, txnListWidget),
           ],
         ),
       ),

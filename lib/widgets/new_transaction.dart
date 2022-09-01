@@ -8,10 +8,15 @@ import './adaptive_date_flat_button.dart';
 class NewTransaction extends StatefulWidget {
   final Function addNewTxnHandler;
 
-  NewTransaction(this.addNewTxnHandler);
+  NewTransaction(this.addNewTxnHandler) {
+    print("Constructor NewTransaction Widget");
+  }
 
   @override
-  State<NewTransaction> createState() => _NewTransactionState();
+  State<NewTransaction> createState() {
+    print("createState NewTransaction Widget");
+    return _NewTransactionState();
+  }
 }
 
 class _NewTransactionState extends State<NewTransaction> {
@@ -21,6 +26,27 @@ class _NewTransactionState extends State<NewTransaction> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   DateTime _selectedDate;
+
+  _NewTransactionState() {
+    print("Constructor NewTransaction State");
+  }
+  @override
+  void initState() {
+    print("initState()");
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(NewTransaction oldWidget) {
+    print("didUpdateWidget()");
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void dispose() {
+    print("dispose()");
+    super.dispose();
+  }
 
   void _txnSubmission() {
     if (_amountController.text.isEmpty) {
@@ -77,7 +103,7 @@ class _NewTransactionState extends State<NewTransaction> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               TextField(
-                decoration: InputDecoration(labelText: 'Title'),
+                decoration: const InputDecoration(labelText: 'Title'),
                 controller: _titleController,
                 // we have to pass a value here since the value is not needed it
                 // is just a dummy value we can use _ to remember or using a
@@ -87,7 +113,7 @@ class _NewTransactionState extends State<NewTransaction> {
                 onSubmitted: (_) => _txnSubmission(),
               ),
               TextField(
-                decoration: InputDecoration(labelText: 'Amount'),
+                decoration: const InputDecoration(labelText: 'Amount'),
                 controller: _amountController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
                 onSubmitted: (_) => _txnSubmission(),

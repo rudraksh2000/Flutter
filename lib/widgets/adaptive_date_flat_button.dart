@@ -11,7 +11,7 @@ class AdaptiveDateFlatButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Platform.isIOS
+    return Platform.isIOS
         ? CupertinoButton(
             onPressed: (chooseDateHandler),
             child: Text(
