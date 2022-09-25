@@ -40,7 +40,7 @@ class CartScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   backgroundColor: Theme.of(context).accentColor,
                   label: Text(
-                    '\$${cart.totalAmount}',
+                    '\$${cart.totalAmount.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),

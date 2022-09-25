@@ -56,7 +56,8 @@ class _OrderItemState extends State<OrderItem> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        trailing: Text('${prod.quantity} x \$${prod.price}'),
+                        trailing: Text(
+                            '${prod.quantity} x \$${prod.price.toStringAsFixed(2)}'),
                       ),
                     )
                     .toList(),

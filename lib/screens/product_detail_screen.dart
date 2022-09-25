@@ -24,7 +24,7 @@ class ProductDetailScreen extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            Container(
+            SizedBox(
               height: 400,
               width: double.infinity,
               child: Image.network(
@@ -32,7 +32,7 @@ class ProductDetailScreen extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            Divider(),
+            const Divider(),
             Text(
               loadedProduct.title,
               style: const TextStyle(
@@ -40,6 +40,15 @@ class ProductDetailScreen extends StatelessWidget {
                 fontSize: 20,
               ),
             ),
+            Text(
+              '\$${loadedProduct.price}',
+              style: const TextStyle(
+                color: Colors.grey,
+                fontFamily: 'Anton',
+                fontSize: 18,
+              ),
+            ),
+            const Divider(thickness: 0.8),
             Text(
               loadedProduct.description,
               style: const TextStyle(
