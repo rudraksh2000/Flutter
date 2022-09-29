@@ -2,10 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shops_app/providers/cart_provider.dart';
-import 'package:shops_app/screens/cart_screen.dart';
-import 'package:shops_app/widgets/app_drawer.dart';
 
+import '../providers/cart_provider.dart';
+import '../providers/products_provider.dart';
+
+import './cart_screen.dart';
+
+import '../widgets/app_drawer.dart';
 import '../widgets/badge.dart';
 import '../widgets/products_grid.dart';
 
@@ -23,6 +26,43 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showOnlyFavourites = false;
+  var _isInit = true;
+  var _isLoading = false;
+
+  @override
+  void initState() {
+    // we can't initialize Provider here as we know all these of(context) things
+    // don't work like ModalRoute.of(context) etc, although if we set
+    //Provider.of<ProductsProvider>(context, listen: false) it will work.
+
+    //Provider.of<ProductsProvider>(context).fetchAndSetProducts(); // Won't work
+
+    // Below code will work but it is not the ideal way of doing it since
+    // Future.delayed add some delay to the code which is set to zero, it will
+    // work though but it is just a hack.
+
+    // Future.delayed(Duration.zero).then((_) {
+    //   Provider.of<ProductsProvider>(context).fetchAndSetProducts();
+    // });
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<ProductsProvider>(context).fetchAndSetProducts().then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,10 +109,14 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body: Container(
-        padding: const EdgeInsets.all(10),
-        child: ProductsGrid(_showOnlyFavourites),
-      ),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : Container(
+              padding: const EdgeInsets.all(10),
+              child: ProductsGrid(_showOnlyFavourites),
+            ),
     );
   }
 }
