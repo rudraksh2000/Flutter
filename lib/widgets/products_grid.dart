@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:provider/provider.dart';
@@ -37,7 +39,8 @@ class ProductsGrid extends StatelessWidget {
       // product.
       itemBuilder: (ctx, index) => ChangeNotifierProvider.value(
         value: products[index],
-        child: const ProductItem(
+        // don't add const here since ProductItem is changing the value
+        child: ProductItem(
             // products[index].id,
             // products[index].title,
             // products[index].imageUrl,

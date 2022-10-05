@@ -3,10 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import './providers/auth_provider.dart';
 import './providers/orders_provider.dart';
 import './providers/cart_provider.dart';
 import './providers/products_provider.dart';
 
+import './screens/auth_screen.dart';
+import './screens/splash_screen.dart';
 import './screens/edit_product_screen.dart';
 import './screens/user_products_screen.dart';
 import './screens/orders_screen.dart';
@@ -27,30 +30,58 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (ctx) => ProductsProvider(),
+          create: (ctx) => AuthProvider(),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
+          create: (ctx) => ProductsProvider(null, null, []),
+          update: (ctx, auth, previousProducts) => ProductsProvider(
+            auth.token,
+            auth.userId,
+            previousProducts == null ? [] : previousProducts.items,
+          ),
         ),
         ChangeNotifierProvider(
           create: (ctx) => CartProvider(),
         ),
-        ChangeNotifierProvider(
-          create: (ctx) => OrdersProvider(),
+        ChangeNotifierProxyProvider<AuthProvider, OrdersProvider>(
+          create: (ctx) => OrdersProvider(null, null, []),
+          update: (ctx, auth, previousOrders) => OrdersProvider(
+            auth.token,
+            auth.userId,
+            previousOrders == null ? [] : previousOrders.orders,
+          ),
         ),
       ],
-      child: MaterialApp(
-        title: 'MyShop',
-        theme: ThemeData(
-          primarySwatch: Colors.cyan,
-          accentColor: Colors.amber,
-          fontFamily: 'Lato',
+      // since we want to change the landing page based onif the user is
+      // authenticated or not which depends on AuthProvider we are building
+      // our material app accordingly and that's why using consumer here.
+      child: Consumer<AuthProvider>(
+        builder: (ctx, auth, _) => MaterialApp(
+          title: 'MyShop',
+          theme: ThemeData(
+            primarySwatch: Colors.cyan,
+            accentColor: Colors.amber,
+            fontFamily: 'Lato',
+          ),
+          home: auth.isAuth
+              ? ProductsOverviewScreen()
+              : FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (context, authResultSnapshot) =>
+                      authResultSnapshot.connectionState ==
+                              ConnectionState.waiting
+                          ? SplashScreen()
+                          : AuthScreen(),
+                ),
+          routes: {
+            ProductsOverviewScreen.routeName: (ct) => ProductDetailScreen(),
+            ProductDetailScreen.routeName: (ct) => ProductDetailScreen(),
+            CartScreen.routeName: (ct) => CartScreen(),
+            OrdersScreen.routeName: (ct) => OrdersScreen(),
+            UserProductsScreen.routeName: (ct) => UserProductsScreen(),
+            EditProductScreen.routeName: (ct) => EditProductScreen(),
+          },
         ),
-        home: ProductsOverviewScreen(),
-        routes: {
-          ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
-          CartScreen.routeName: (ctx) => CartScreen(),
-          OrdersScreen.routeName: (ctx) => OrdersScreen(),
-          UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-          EditProductScreen.routeName: (ctx) => EditProductScreen(),
-        },
       ),
     );
   }

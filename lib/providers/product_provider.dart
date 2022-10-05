@@ -38,18 +38,21 @@ class ProductProvider with ChangeNotifier {
     );
   }
 
-  Future<void> toggleIsFavourite() async {
+  Future<void> toggleIsFavourite(String authToken, String userId) async {
+    var _params = {
+      'auth': authToken,
+    };
     final url = Uri.https('shops-app-flutter-demo-default-rtdb.firebaseio.com',
-        '/products/$id.json');
+        '/userFavourites/$userId/$id.json', _params);
 
     var oldIsFavourite = isFavourite;
     isFavourite = !isFavourite;
     notifyListeners();
 
-    final response = await http.patch(
+    final response = await http.put(
       url,
       body: json.encode(
-        {'isFavourite': isFavourite},
+        isFavourite,
       ),
     );
     if (response.statusCode >= 400) {

@@ -9,6 +9,8 @@ import '../models/http_exception.dart';
 import 'product_provider.dart';
 
 class ProductsProvider with ChangeNotifier {
+  final String authToken;
+  final String userId;
   List<ProductProvider> _items = [
     //   ProductProvider(
     //     id: 'p1',
@@ -43,6 +45,7 @@ class ProductsProvider with ChangeNotifier {
     //         'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     //   ),
   ];
+  ProductsProvider(this.authToken, this.userId, this._items);
 
   List<ProductProvider> get items {
     // here we are returning a copy of list so that to protect the actual list
@@ -61,15 +64,30 @@ class ProductsProvider with ChangeNotifier {
     return _items.firstWhere((product) => product.id == id);
   }
 
-  Future<void> fetchAndSetProducts() async {
-    final url = Uri.https(
-        'shops-app-flutter-demo-default-rtdb.firebaseio.com', '/products.json');
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    var _params = {
+      'auth': authToken,
+    };
+    if (filterByUser) {
+      _params = {
+        'auth': authToken,
+        'orderBy': jsonEncode("creatorId"),
+        'equalTo': jsonEncode(userId)
+      };
+    }
+
+    var url = Uri.https('shops-app-flutter-demo-default-rtdb.firebaseio.com',
+        '/products.json', _params);
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       if (extractedData == null) {
         return;
       }
+      url = Uri.https('shops-app-flutter-demo-default-rtdb.firebaseio.com',
+          '/userFavourites/$userId.json', _params);
+      final favouriteResponse = await http.get(url);
+      final favouriteData = json.decode(favouriteResponse.body);
       final List<ProductProvider> loadedProducts = [];
       extractedData.forEach((prodId, prodData) {
         loadedProducts.add(ProductProvider(
@@ -77,7 +95,8 @@ class ProductsProvider with ChangeNotifier {
           title: prodData['title'],
           description: prodData['description'],
           price: prodData['price'],
-          isFavourite: prodData['isFavourite'],
+          isFavourite:
+              favouriteData == null ? false : favouriteData[prodId] ?? false,
           imageUrl: prodData['imageUrl'],
         ));
       });
@@ -89,9 +108,12 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> addProduct(ProductProvider product) async {
+    var _params = {
+      'auth': authToken,
+    };
     // earlier url can be stored as strings but now it follows this convention.
-    final url = Uri.https(
-        'shops-app-flutter-demo-default-rtdb.firebaseio.com', '/products.json');
+    final url = Uri.https('shops-app-flutter-demo-default-rtdb.firebaseio.com',
+        '/products.json', _params);
     // to store date we want to return a future also.
     try {
       final response = await http.post(
@@ -101,7 +123,7 @@ class ProductsProvider with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavourite': product.isFavourite,
+          'creatorId': userId
         }),
       );
       //_items.add(value);
@@ -120,11 +142,15 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> updateProduct(String id, ProductProvider newProduct) async {
+    var _params = {
+      'auth': authToken,
+    };
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
       final url = Uri.https(
           'shops-app-flutter-demo-default-rtdb.firebaseio.com',
-          '/products/$id.json');
+          '/products/$id.json',
+          _params);
       try {
         await http.patch(
           url,
@@ -144,8 +170,11 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> removeProduct(String id) async {
+    var _params = {
+      'auth': authToken,
+    };
     final url = Uri.https('shops-app-flutter-demo-default-rtdb.firebaseio.com',
-        '/products/$id.json');
+        '/products/$id.json', _params);
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     var existingProduct = _items[existingProductIndex];
     existingProduct = null;
