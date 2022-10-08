@@ -1,4 +1,4 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, prefer_const_constructors
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,47 +18,51 @@ class ProductDetailScreen extends StatelessWidget {
     final loadedProduct = Provider.of<ProductsProvider>(context, listen: false)
         .findById(productId);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loadedProduct.title),
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 400,
-              width: double.infinity,
-              child: Image.network(
-                loadedProduct.imageUrl,
-                fit: BoxFit.cover,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(loadedProduct.title),
+              background: Hero(
+                tag: loadedProduct.id,
+                child: Image.network(
+                  loadedProduct.imageUrl,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-            const Divider(),
-            Text(
-              loadedProduct.title,
-              style: const TextStyle(
-                fontFamily: 'Anton',
-                fontSize: 20,
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              SizedBox(height: 10),
+              Text(
+                '\$${loadedProduct.price}',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 20,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            Text(
-              '\$${loadedProduct.price}',
-              style: const TextStyle(
-                color: Colors.grey,
-                fontFamily: 'Anton',
-                fontSize: 18,
+              SizedBox(
+                height: 10,
               ),
-            ),
-            const Divider(thickness: 0.8),
-            Text(
-              loadedProduct.description,
-              style: const TextStyle(
-                fontFamily: 'Lato',
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                width: double.infinity,
+                child: Text(
+                  loadedProduct.description,
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                ),
               ),
-            ),
-          ],
-        ),
+              SizedBox(
+                height: 800,
+              ),
+            ]),
+          )
+        ],
       ),
     );
   }

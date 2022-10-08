@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shops_app/helpers/custom_route.dart';
 
 import './providers/auth_provider.dart';
 import './providers/orders_provider.dart';
@@ -62,6 +63,10 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.cyan,
             accentColor: Colors.amber,
             fontFamily: 'Lato',
+            pageTransitionsTheme: PageTransitionsTheme(builders: {
+              TargetPlatform.android: CustomPageTransitionBuilder(),
+              TargetPlatform.iOS: CustomPageTransitionBuilder(),
+            }),
           ),
           home: auth.isAuth
               ? ProductsOverviewScreen()
