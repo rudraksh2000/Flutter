@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, depend_on_referenced_packages
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -271,12 +271,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
                                 ),
                                 child: _imageUrlController.text.isEmpty
                                     ? FittedBox(
-                                        fit: BoxFit.cover,
+                                        fit: BoxFit.contain,
                                         child: Image.asset(
                                             'assets/images/default_image.png'),
                                       )
                                     : FittedBox(
-                                        fit: BoxFit.cover,
+                                        fit: BoxFit.contain,
                                         child: Image.network(
                                             _imageUrlController.text),
                                       ),
